@@ -1,0 +1,46 @@
+name: LLM Security Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 9 * * 1'   # Run every Monday at 9am UTC
+
+jobs:
+  prompt-injection-tests:
+    runs-on: ubuntu-latest
+    name: Prompt Injection Tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run prompt injection test suite
+        env:
+          LLM_API_URL: ${{ secrets.LLM_API_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL:   ${{ secrets.LLM_MODEL }}
+        run: |
+          pytest attacks/prompt-injection/ -v \
+            --html=reports/ci_findings.html \
+            --self-contained-html \
+            -p no:warnings
+
+      - name: Upload findings report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-findings
+          path: reports/
+          retention-days: 30
