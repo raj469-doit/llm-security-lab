@@ -1,5 +1,7 @@
 # 🔐 LLM Security Lab
 
+[![LLM Security Test Suite](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml/badge.svg)](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml)
+
 **Probing AI systems for vulnerabilities so your users don't find them first.**
 
 Built and maintained by **Robert Johnson** — DevSecOps & Automation Engineer with 15+ years
