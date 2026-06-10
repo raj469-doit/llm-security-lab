@@ -34,10 +34,11 @@ This lab maps directly to the **OWASP Top 10 for LLM Applications**:
 | # | Vulnerability | Status |
 |---|--------------|--------|
 | LLM01 | Prompt Injection | 🔬 Active research |
-| LLM02 | Insecure Output Handling | 🔬 Active research |
-| LLM03 | Training Data Poisoning | 📋 Planned |
-| LLM06 | Sensitive Information Disclosure | 🔬 Active research |
-| LLM08 | Excessive Agency (Agentic AI misuse) | 📋 Planned |
+| LLM02 | Sensitive Information Disclosure | 🔬 Active research |
+| LLM05 | Improper Output Handling | 📋 Planned |
+| LLM06 | Excessive Agency (Agentic AI misuse) | 📋 Planned |
+| LLM07 | System Prompt Leakage | 🔬 Active research
+| LLM08 | Vector and Embedding Weaknesses | 📋 Planned |
 
 ---
 
