@@ -1,6 +1,6 @@
 # 🔐 LLM Security Lab
 
-[![LLM Security Test Suite](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml/badge.svg)](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml)
+![LLM Security Test Suite](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml/badge.svg)
 
 **Probing AI systems for vulnerabilities so your users don't find them first.**
 
@@ -29,16 +29,18 @@ automation stack I've used in production: Pytest, Pydantic, Playwright, GitHub A
 
 ## What I test for
 
-This lab maps directly to the **OWASP Top 10 for LLM Applications**:
+Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 
-| # | Vulnerability | Status |
-|---|--------------|--------|
-| LLM01 | Prompt Injection | 🔬 Active research |
-| LLM02 | Sensitive Information Disclosure | 🔬 Active research |
-| LLM05 | Improper Output Handling | 📋 Planned |
-| LLM06 | Excessive Agency (Agentic AI misuse) | 📋 Planned |
-| LLM07 | System Prompt Leakage | 🔬 Active research
-| LLM08 | Vector and Embedding Weaknesses | 📋 Planned |
+| # | Vulnerability | Payloads | Status |
+|---|--------------|----------|--------|
+| LLM01 | Prompt Injection | 12 | 🔬 Active research |
+| LLM07 | System Prompt Leakage | 15 | 🔬 Active research |
+| LLM02 | Sensitive Information Disclosure | — | 📋 Planned |
+| LLM05 | Improper Output Handling | — | 📋 Planned |
+| LLM06 | Excessive Agency (Agentic AI misuse) | — | 📋 Planned |
+| LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
+
+**Total active test cases: 27** — growing weekly.
 
 ---
 
@@ -46,21 +48,33 @@ This lab maps directly to the **OWASP Top 10 for LLM Applications**:
 
 ```
 llm-security-lab/
-├── attacks/              # Documented attack notebooks by vulnerability type
-│   ├── prompt-injection/
-│   └── data-exfiltration/
-├── tools/                # Reusable Python test utilities and harnesses
-├── reports/              # Sample audit report templates
-├── checklists/           # LLM Security Checklist (free resource)
-└── docs/                 # Research notes and references
+├── attacks/                          # Test suites by vulnerability category
+│   ├── prompt-injection/             # LLM01 — 12 payloads, 5 categories
+│   └── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
+├── tools/                            # Reusable Python test utilities
+├── reports/                          # Generated findings reports
+├── checklists/                       # LLM Security Checklist (free resource)
+└── .github/workflows/                # CI/CD — runs on every push
 ```
+
+---
+
+## How LLM01 and LLM07 chain together
+
+These two active modules are intentionally sequenced to demonstrate real attack chains:
+
+1. **LLM01 Prompt Injection** — attacker manipulates model behavior via crafted input
+2. **LLM07 System Prompt Leakage** — attacker extracts system prompt to learn guardrails,
+   credentials, and business logic
+3. Armed with that knowledge, they return to craft a *targeted* bypass
+
+The `SPL-04x` injection-assisted payloads demonstrate this chain explicitly.
 
 ---
 
 ## Tech stack
 
 ```python
-# Core testing stack
 pytest          # Test orchestration and assertions
 pydantic        # Input/output schema validation
 playwright      # Headless UI interaction with AI-powered interfaces
@@ -73,15 +87,39 @@ layer most LLM security researchers skip entirely.
 
 ---
 
-## Featured work
+## Running the lab
 
-### 🧪 Prompt Injection Test Suite *(coming Week 1)*
-A structured Pytest framework for testing LLM API endpoints against direct and
-indirect prompt injection. Includes automated severity scoring and markdown report generation.
+```bash
+# Install dependencies
+pip install -r requirements.txt
 
-### 📋 LLM Security Checklist *(coming Week 2)*
-A free, practical checklist for AI teams to assess their LLM product against the
-OWASP Top 10. No vendor lock-in, no sales pitch.
+# Set environment variables
+cp .env.example .env
+# Edit .env with your API key and endpoint
+
+# Run all active modules
+pytest attacks/ -v
+
+# Run with HTML report
+pytest attacks/ -v --html=reports/findings.html --self-contained-html
+
+# Run only critical severity tests
+pytest attacks/ -v -k "critical"
+```
+
+---
+
+## Featured modules
+
+### 🔴 LLM01: Prompt Injection (`attacks/prompt-injection/`)
+12 payloads across 5 categories: direct injection, indirect injection, role confusion,
+instruction override, and obfuscation (adversarial suffix, multilingual, emoji encoding).
+Automated severity scoring and markdown findings report.
+
+### 🔴 LLM07: System Prompt Leakage (`attacks/system-prompt-leakage/`)
+15 payloads across 5 categories: direct extraction, completion priming, inference probing,
+injection-assisted leakage, and persona bypass. Three-layer detection including regex
+pattern matching for credentials and internal hostnames.
 
 ---
 
