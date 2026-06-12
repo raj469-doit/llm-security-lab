@@ -4,11 +4,12 @@ Each subfolder contains a focused test suite for a specific OWASP LLM vulnerabil
 
 | Folder | OWASP ID | Status |
 | --- | --- | --- |
-| `prompt-injection/` | LLM01 | 🔬 Active |
-| `data-exfiltration/` | LLM06 | 📋 Coming Week 2 |
-| `insecure-output/` | LLM02 | 📋 Coming Week 3 |
-| `excessive-agency/` | LLM08 | 📋 Coming Week 3 |
-
+| LLM01 | Prompt Injection | 🔬 Active research |
+| LLM02 | Sensitive Information Disclosure | 🔬 Active research |
+| LLM05 | Improper Output Handling | 📋 Planned |
+| LLM06 | Excessive Agency (Agentic AI misuse) | 📋 Planned |
+| LLM07 | System Prompt Leakage | 🔬 Active research
+| LLM08 | Vector and Embedding Weaknesses | 📋 Planned |
 ## Running a specific suite
 
     # Run all prompt injection tests
