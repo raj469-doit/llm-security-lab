@@ -2,9 +2,7 @@
 
 ![LLM Security Test Suite](https://github.com/raj469-doit/llm-security-lab/actions/workflows/security-tests.yml/badge.svg)
 
-# 🔐 LLM Security Lab
 
-![LLM Security Test Suite](https://github.com/YOUR-USERNAME/llm-security-lab/actions/workflows/security-tests.yml/badge.svg)
 
 **Probing AI systems for vulnerabilities so your users don't find them first.**
 
