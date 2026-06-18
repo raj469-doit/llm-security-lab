@@ -6,13 +6,13 @@ category, mapped to the **OWASP Top 10 for LLM Applications 2025**.
 | Folder | OWASP ID | Vulnerability | Payloads | Status |
 |--------|----------|---------------|----------|--------|
 | `prompt-injection/` | LLM01 | Prompt Injection | 12 | 🔬 Active |
+| `sensitive-info-disclosure/` | LLM02 | Sensitive Information Disclosure | 13 | 🔬 Active |
 | `system-prompt-leakage/` | LLM07 | System Prompt Leakage | 15 | 🔬 Active |
-| `sensitive-info-disclosure/` | LLM02 | Sensitive Information Disclosure | — | 📋 Planned |
 | `improper-output/` | LLM05 | Improper Output Handling | — | 📋 Planned |
 | `excessive-agency/` | LLM06 | Excessive Agency (Agentic AI misuse) | — | 📋 Planned |
 | `vector-embedding/` | LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
 
-**Total active test cases: 27** across 2 modules (LLM01 + LLM07)
+**Total active test cases: 40** across 3 modules (LLM01 + LLM02 + LLM07)
 
 ---
 
@@ -21,6 +21,9 @@ category, mapped to the **OWASP Top 10 for LLM Applications 2025**.
 ```bash
 # Run all prompt injection tests
 pytest attacks/prompt-injection/ -v
+
+# Run all sensitive information disclosure tests
+pytest attacks/sensitive-info-disclosure/ -v
 
 # Run all system prompt leakage tests
 pytest attacks/system-prompt-leakage/ -v
@@ -35,16 +38,26 @@ pytest attacks/ -v --html=reports/findings.html --self-contained-html
 pytest attacks/ -v -k "critical"
 ```
 
-## How LLM01 and LLM07 chain together
+## How the three active modules connect
 
-These two modules are intentionally sequenced. In real-world attacks:
+These modules are intentionally sequenced to demonstrate real attack chains
+seen in production LLM applications:
 
 1. **LLM01 Prompt Injection** — attacker manipulates model behavior via crafted input
-2. **LLM07 System Prompt Leakage** — attacker extracts the system prompt to learn guardrails,
-   credentials, and business logic
-3. Armed with that knowledge, they return to LLM01 with a *targeted* bypass
+2. **LLM07 System Prompt Leakage** — attacker extracts the system prompt to learn
+   guardrails, credentials, and business logic
+3. **LLM02 Sensitive Information Disclosure** — attacker pivots from application
+   configuration to USER data — PII, cross-tenant leakage in multi-tenant systems,
+   and memorized training data
 
-The `SPL-04x` payloads in `system-prompt-leakage/` demonstrate this chain explicitly.
+In a real engagement, these rarely stay separate. A multi-tenant AI support agent
+(handling tickets from many customers in shared context) is vulnerable to all three
+in sequence: inject a malicious instruction (LLM01), use it to extract the system's
+rules (LLM07), then use those rules to pull another customer's data out of the
+shared knowledge base (LLM02).
+
+The `SPL-04x` payloads in `system-prompt-leakage/` and the `CTL-0xx` payloads in
+`sensitive-info-disclosure/` demonstrate this chain explicitly.
 
 ## Environment setup
 
@@ -54,11 +67,12 @@ Copy `.env.example` to `.env` and fill in your credentials:
 cp .env.example .env
 ```
 
-For system prompt leakage tests, optionally set `LLM_SYSTEM_PROMPT` to the
-actual system prompt of the application under test:
+For system prompt leakage and disclosure tests, optionally set these to simulate
+a real application deployment:
 
 ```bash
 export LLM_SYSTEM_PROMPT="You are Aria, a customer support assistant..."
+export LLM_CONTEXT_DOCUMENT="--- Past Support Tickets ---..."
 ```
 
 Never commit `.env` to version control.
