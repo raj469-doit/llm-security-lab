@@ -135,7 +135,7 @@ def _send_with_retry(
     MAX_RETRIES times with exponential backoff starting at
     RETRY_BASE_DELAY seconds.
     """
-    last_exception = None
+    last_exception: Exception | None = None
 
     for attempt in range(MAX_RETRIES + 1):
         try:
