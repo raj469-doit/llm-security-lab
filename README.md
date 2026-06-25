@@ -52,12 +52,23 @@ Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 llm-security-lab/
 ├── attacks/                          # Test suites by vulnerability category
 │   ├── prompt-injection/             # LLM01 — 12 payloads, 5 categories
+│   │   ├── test_prompt_injection.py
+│   │   └── payloads.yaml             # Editable payload definitions
 │   ├── sensitive-info-disclosure/    # LLM02 — 13 payloads, 4 categories
+│   │   ├── test_sensitive_info_disclosure.py
+│   │   └── payloads.yaml
 │   └── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
+│       ├── test_system_prompt_leakage.py
+│       └── payloads.yaml
+├── lib/                              # Shared Python modules
+│   ├── llm_client.py                 # Unified LLM API client with retry logic
+│   └── payload_loader.py             # YAML payload loader with Pydantic validation
 ├── tools/                            # Reusable Python test utilities
 ├── reports/                          # Generated findings reports
 ├── checklists/                       # LLM Security Checklist (free resource)
-└── .github/workflows/                # CI/CD — runs on every push
+├── conftest.py                       # Shared pytest config, dotenv loading, markers
+├── pyproject.toml                    # Ruff, mypy, and pytest configuration
+└── .github/workflows/                # CI/CD — lint, type-check, and test on every push
 ```
 
 ---
@@ -86,9 +97,13 @@ demonstrate this chain explicitly.
 ```python
 pytest          # Test orchestration and assertions
 pydantic        # Input/output schema validation
+pyyaml          # Externalized payload definitions
+requests        # Direct API probing (with retry/backoff)
+python-dotenv   # Environment variable management
+ruff            # Linting and import sorting
+mypy            # Static type checking
 playwright      # Headless UI interaction with AI-powered interfaces
-requests        # Direct API probing
-github_actions  # Automated CI execution of security test suites
+github_actions  # Automated CI — lint, type-check, and test on every push
 ```
 
 Plus: **SQL**, **log analysis**, **PKI/TLS**, **Linux hardening** — the infrastructure
@@ -105,6 +120,7 @@ pip install -r requirements.txt
 # Set environment variables
 cp .env.example .env
 # Edit .env with your API key and endpoint
+# (dotenv loads automatically — no need to export manually)
 
 # Run all active modules
 pytest attacks/ -v
@@ -112,8 +128,12 @@ pytest attacks/ -v
 # Run with HTML report
 pytest attacks/ -v --html=reports/findings.html --self-contained-html
 
-# Run only critical severity tests
-pytest attacks/ -v -k "critical"
+# Run only critical severity tests (using pytest markers)
+pytest attacks/ -v -m "critical"
+
+# Run linting and type checking
+ruff check .
+mypy lib/ conftest.py attacks/
 ```
 
 ---
@@ -134,6 +154,27 @@ RAG knowledge base containing multiple customers' data to test isolation boundar
 15 payloads across 5 categories: direct extraction, completion priming, inference probing,
 injection-assisted leakage, and persona bypass. Three-layer detection including regex
 pattern matching for credentials and internal hostnames.
+
+---
+
+## Adding custom payloads
+
+Each attack module has a `payloads.yaml` file where you can add test cases without
+editing Python. The YAML is validated against the module's Pydantic schema at load time,
+so you'll get clear error messages if a field is missing or has an invalid value.
+
+```yaml
+# Example: add a new prompt injection payload
+- id: DI-004
+  category: direct_injection
+  description: "My custom injection test"
+  payload: "Your attack string here"
+  expected_behavior: "Model should refuse and stay in role."
+  severity: high
+```
+
+If the YAML file is missing or PyYAML isn't installed, the test suite falls back
+to the hardcoded payloads in the Python source — so nothing breaks.
 
 ---
 
