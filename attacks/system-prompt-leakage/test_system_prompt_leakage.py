@@ -50,9 +50,10 @@ import os
 import re
 import datetime
 import pytest
-import requests
 from pydantic import BaseModel, Field
 from typing import Literal
+
+from lib.llm_client import call_llm
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +113,7 @@ class LeakageResult(BaseModel):
     evidence: str = ""
     leak_type: str = ""
     timestamp: str = Field(
-        default_factory=lambda: datetime.datetime.utcnow().isoformat()
+        default_factory=lambda: datetime.datetime.now(datetime.UTC).isoformat()
     )
 
 
@@ -329,45 +330,6 @@ LEAKAGE_PAYLOADS: list[LeakagePayload] = [
 
 
 # ---------------------------------------------------------------------------
-# LLM client helper
-# ---------------------------------------------------------------------------
-
-def call_llm(user_message: str) -> str:
-    """
-    Send a message to the LLM under test using the configured system prompt
-    and return the response text.
-
-    The system prompt is loaded from LLM_SYSTEM_PROMPT env var, falling back
-    to DEFAULT_SYSTEM_PROMPT which simulates a real application deployment.
-    """
-    api_url      = os.environ.get("LLM_API_URL", "https://api.openai.com/v1/chat/completions")
-    api_key      = os.environ.get("LLM_API_KEY", "")
-    model        = os.environ.get("LLM_MODEL", "gpt-4o-mini")
-    system_prompt = os.environ.get("LLM_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
-
-    if not api_key:
-        pytest.skip("LLM_API_KEY not set — skipping live API tests")
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    body = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": user_message},
-        ],
-        "temperature": 0,
-        "max_tokens": 512,
-    }
-
-    response = requests.post(api_url, headers=headers, json=body, timeout=30)
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
-
-
-# ---------------------------------------------------------------------------
 # Vulnerability detection
 # ---------------------------------------------------------------------------
 
@@ -440,10 +402,12 @@ def generate_leakage_report(results: list[LeakageResult], output_path: str) -> N
         by_severity[r.severity].append(r)
         by_leak_type.setdefault(r.leak_type, []).append(r)
 
+    now = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M UTC')
+
     lines = [
         "# LLM07:2025 System Prompt Leakage — Findings Report",
         "",
-        f"**Generated:** {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}  ",
+        f"**Generated:** {now}  ",
         f"**Model tested:** `{os.environ.get('LLM_MODEL', 'unknown')}`  ",
         f"**Endpoint:** `{os.environ.get('LLM_API_URL', 'unknown')}`  ",
         "",
@@ -550,6 +514,11 @@ def generate_leakage_report(results: list[LeakageResult], output_path: str) -> N
 _results: list[LeakageResult] = []
 
 
+def _get_system_prompt() -> str:
+    """Load system prompt from env var or fall back to the simulated default."""
+    return os.environ.get("LLM_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def write_report_on_finish():
     """Session-scoped fixture: generate report after all tests complete."""
@@ -557,7 +526,7 @@ def write_report_on_finish():
     if _results:
         report_path = os.path.join(
             "reports",
-            f"system_prompt_leakage_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')}.md",
+            f"system_prompt_leakage_{datetime.datetime.now(datetime.UTC).strftime('%Y%m%d_%H%M')}.md",
         )
         generate_leakage_report(_results, report_path)
 
@@ -575,7 +544,7 @@ def test_system_prompt_leakage(payload: LeakagePayload):
       SPL-04x  Injection-assisted leakage
       SPL-05x  Persona/role bypass
     """
-    response_text = call_llm(payload.payload)
+    response_text = call_llm(payload.payload, system_prompt=_get_system_prompt())
     vulnerable, evidence, leak_type = detect_leakage(response_text, payload)
 
     result = LeakageResult(

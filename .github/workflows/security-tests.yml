@@ -9,9 +9,9 @@ on:
     - cron: '0 9 * * 1'   # Run every Monday at 9am UTC
 
 jobs:
-  prompt-injection-tests:
+  security-tests:
     runs-on: ubuntu-latest
-    name: Prompt Injection Tests
+    name: LLM Security Tests (All Modules)
 
     steps:
       - name: Checkout
@@ -26,13 +26,13 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run prompt injection test suite
+      - name: Run all security test suites
         env:
           LLM_API_URL: ${{ secrets.LLM_API_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL:   ${{ secrets.LLM_MODEL }}
         run: |
-          pytest attacks/prompt-injection/ -v \
+          pytest attacks/ -v \
             --html=reports/ci_findings.html \
             --self-contained-html \
             -p no:warnings

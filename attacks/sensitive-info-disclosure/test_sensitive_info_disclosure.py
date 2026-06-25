@@ -49,9 +49,10 @@ import os
 import re
 import datetime
 import pytest
-import requests
 from pydantic import BaseModel, Field
 from typing import Literal
+
+from lib.llm_client import call_llm
 
 
 # ---------------------------------------------------------------------------
@@ -121,12 +122,12 @@ class DisclosureResult(BaseModel):
     evidence: str = ""
     disclosure_type: str = ""
     timestamp: str = Field(
-        default_factory=lambda: datetime.datetime.utcnow().isoformat()
+        default_factory=lambda: datetime.datetime.now(datetime.UTC).isoformat()
     )
 
 
 # ---------------------------------------------------------------------------
-# Payload library — 14 test cases across 4 attack categories
+# Payload library — 13 test cases across 4 attack categories
 # ---------------------------------------------------------------------------
 
 DISCLOSURE_PAYLOADS: list[DisclosurePayload] = [
@@ -307,50 +308,6 @@ DISCLOSURE_PAYLOADS: list[DisclosurePayload] = [
 
 
 # ---------------------------------------------------------------------------
-# LLM client helper
-# ---------------------------------------------------------------------------
-
-def call_llm(user_message: str) -> str:
-    """
-    Send a message to the LLM under test, simulating a realistic application
-    deployment with a system prompt AND a loaded context document containing
-    multi-tenant data (as a RAG-style application would have).
-    """
-    api_url      = os.environ.get("LLM_API_URL", "https://api.openai.com/v1/chat/completions")
-    api_key      = os.environ.get("LLM_API_KEY", "")
-    model        = os.environ.get("LLM_MODEL", "gpt-4o-mini")
-    system_prompt = os.environ.get("LLM_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
-    context_doc   = os.environ.get("LLM_CONTEXT_DOCUMENT", DEFAULT_CONTEXT_DOCUMENT)
-
-    if not api_key:
-        pytest.skip("LLM_API_KEY not set — skipping live API tests")
-
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-
-    # Simulate RAG-style context injection: the "knowledge base" content is
-    # injected as part of the system context, exactly as a real retrieval
-    # pipeline would inject retrieved documents before the user's question.
-    full_system_content = f"{system_prompt}\n\n{context_doc}"
-
-    body = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": full_system_content},
-            {"role": "user",   "content": user_message},
-        ],
-        "temperature": 0,
-        "max_tokens": 512,
-    }
-
-    response = requests.post(api_url, headers=headers, json=body, timeout=30)
-    response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
-
-
-# ---------------------------------------------------------------------------
 # Vulnerability detection
 # ---------------------------------------------------------------------------
 
@@ -411,10 +368,12 @@ def generate_disclosure_report(results: list[DisclosureResult], output_path: str
         by_severity[r.severity].append(r)
         by_category.setdefault(r.category, []).append(r)
 
+    now = datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M UTC')
+
     lines = [
         "# LLM02:2025 Sensitive Information Disclosure — Findings Report",
         "",
-        f"**Generated:** {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}  ",
+        f"**Generated:** {now}  ",
         f"**Model tested:** `{os.environ.get('LLM_MODEL', 'unknown')}`  ",
         f"**Endpoint:** `{os.environ.get('LLM_API_URL', 'unknown')}`  ",
         "",
@@ -523,6 +482,16 @@ def generate_disclosure_report(results: list[DisclosureResult], output_path: str
 _results: list[DisclosureResult] = []
 
 
+def _get_system_prompt() -> str:
+    """Load system prompt from env var or fall back to the simulated default."""
+    return os.environ.get("LLM_SYSTEM_PROMPT", DEFAULT_SYSTEM_PROMPT)
+
+
+def _get_context_document() -> str:
+    """Load context document from env var or fall back to the simulated default."""
+    return os.environ.get("LLM_CONTEXT_DOCUMENT", DEFAULT_CONTEXT_DOCUMENT)
+
+
 @pytest.fixture(scope="session", autouse=True)
 def write_report_on_finish():
     """Session-scoped fixture: generate report after all tests complete."""
@@ -530,7 +499,7 @@ def write_report_on_finish():
     if _results:
         report_path = os.path.join(
             "reports",
-            f"sensitive_info_disclosure_{datetime.datetime.utcnow().strftime('%Y%m%d_%H%M')}.md",
+            f"sensitive_info_disclosure_{datetime.datetime.now(datetime.UTC).strftime('%Y%m%d_%H%M')}.md",
         )
         generate_disclosure_report(_results, report_path)
 
@@ -548,7 +517,11 @@ def test_sensitive_information_disclosure(payload: DisclosurePayload):
       TDE-0xx  Training data extraction
       BDD-0xx  Business data disclosure
     """
-    response_text = call_llm(payload.payload)
+    response_text = call_llm(
+        payload.payload,
+        system_prompt=_get_system_prompt(),
+        context_document=_get_context_document(),
+    )
     vulnerable, evidence, disclosure_type = detect_disclosure(response_text, payload)
 
     result = DisclosureResult(
