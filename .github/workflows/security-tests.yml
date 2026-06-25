@@ -25,6 +25,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install ruff mypy
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Type check with mypy
+        run: mypy lib/ conftest.py attacks/
 
       - name: Run all security test suites
         env:

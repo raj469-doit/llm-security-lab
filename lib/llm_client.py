@@ -17,9 +17,9 @@ Usage:
     response = call_llm("Summarize this", system_prompt=PROMPT, context_document=DOC)
 """
 
+import logging
 import os
 import time
-import logging
 
 import pytest
 import requests
@@ -154,7 +154,8 @@ def _send_with_retry(
                 continue
 
             response.raise_for_status()
-            return response.json()["choices"][0]["message"]["content"]
+            content: str = response.json()["choices"][0]["message"]["content"]
+            return content
 
         except requests.exceptions.Timeout as exc:
             last_exception = exc

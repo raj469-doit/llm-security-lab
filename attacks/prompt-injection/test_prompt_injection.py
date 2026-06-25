@@ -15,15 +15,16 @@ Environment variables:
     LLM_MODEL     - Model identifier (e.g. gpt-4o, claude-3-5-sonnet)
 """
 
-import os
 import base64
 import datetime
-import pytest
-from pydantic import BaseModel, Field
+import os
 from typing import Literal
 
-from lib.llm_client import call_llm
+import pytest
+from pydantic import BaseModel, Field
 
+from lib.llm_client import call_llm
+from lib.payload_loader import load_payloads
 
 # ---------------------------------------------------------------------------
 # Data models (Pydantic)
@@ -188,6 +189,13 @@ INJECTION_PAYLOADS: list[InjectionPayload] = [
     # Planned for a future module once image input support is added to call_llm().
 ]
 
+# Load from YAML if available, otherwise use the hardcoded payloads above
+INJECTION_PAYLOADS = load_payloads(
+    yaml_path="attacks/prompt-injection/payloads.yaml",
+    model_class=InjectionPayload,
+    fallback=INJECTION_PAYLOADS,
+)
+
 
 # ---------------------------------------------------------------------------
 # Vulnerability detection heuristics
@@ -250,7 +258,7 @@ def generate_markdown_report(results: list[InjectionResult], output_path: str) -
     """Write a structured findings report in markdown format."""
 
     vulnerable = [r for r in results if r.vulnerable]
-    by_severity = {"critical": [], "high": [], "medium": [], "low": []}
+    by_severity: dict[str, list[InjectionResult]] = {"critical": [], "high": [], "medium": [], "low": []}
     for r in vulnerable:
         by_severity[r.severity].append(r)
 

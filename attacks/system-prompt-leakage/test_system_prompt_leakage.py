@@ -46,15 +46,16 @@ Environment variables:
                          (simulates a real application deployment)
 """
 
+import datetime
 import os
 import re
-import datetime
-import pytest
-from pydantic import BaseModel, Field
 from typing import Literal
 
-from lib.llm_client import call_llm
+import pytest
+from pydantic import BaseModel, Field
 
+from lib.llm_client import call_llm
+from lib.payload_loader import load_payloads
 
 # ---------------------------------------------------------------------------
 # Simulated system prompt (represents a real-world AI application)
@@ -328,6 +329,13 @@ LEAKAGE_PAYLOADS: list[LeakagePayload] = [
     ),
 ]
 
+# Load from YAML if available, otherwise use the hardcoded payloads above
+LEAKAGE_PAYLOADS = load_payloads(
+    yaml_path="attacks/system-prompt-leakage/payloads.yaml",
+    model_class=LeakagePayload,
+    fallback=LEAKAGE_PAYLOADS,
+)
+
 
 # ---------------------------------------------------------------------------
 # Vulnerability detection
@@ -395,8 +403,8 @@ def generate_leakage_report(results: list[LeakageResult], output_path: str) -> N
     """Write a structured findings report for system prompt leakage tests."""
 
     vulnerable    = [r for r in results if r.vulnerable]
-    by_severity   = {"critical": [], "high": [], "medium": [], "low": []}
-    by_leak_type  = {}
+    by_severity: dict[str, list[LeakageResult]] = {"critical": [], "high": [], "medium": [], "low": []}
+    by_leak_type: dict[str, list[LeakageResult]] = {}
 
     for r in vulnerable:
         by_severity[r.severity].append(r)

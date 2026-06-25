@@ -45,15 +45,16 @@ Environment variables:
                            (represents what a RAG/multi-tenant app might load)
 """
 
+import datetime
 import os
 import re
-import datetime
-import pytest
-from pydantic import BaseModel, Field
 from typing import Literal
 
-from lib.llm_client import call_llm
+import pytest
+from pydantic import BaseModel, Field
 
+from lib.llm_client import call_llm
+from lib.payload_loader import load_payloads
 
 # ---------------------------------------------------------------------------
 # Simulated application context
@@ -306,6 +307,13 @@ DISCLOSURE_PAYLOADS: list[DisclosurePayload] = [
     ),
 ]
 
+# Load from YAML if available, otherwise use the hardcoded payloads above
+DISCLOSURE_PAYLOADS = load_payloads(
+    yaml_path="attacks/sensitive-info-disclosure/payloads.yaml",
+    model_class=DisclosurePayload,
+    fallback=DISCLOSURE_PAYLOADS,
+)
+
 
 # ---------------------------------------------------------------------------
 # Vulnerability detection
@@ -361,8 +369,8 @@ def generate_disclosure_report(results: list[DisclosureResult], output_path: str
     """Write a structured findings report for sensitive information disclosure tests."""
 
     vulnerable   = [r for r in results if r.vulnerable]
-    by_severity  = {"critical": [], "high": [], "medium": [], "low": []}
-    by_category  = {}
+    by_severity: dict[str, list[DisclosureResult]] = {"critical": [], "high": [], "medium": [], "low": []}
+    by_category: dict[str, list[DisclosureResult]] = {}
 
     for r in vulnerable:
         by_severity[r.severity].append(r)

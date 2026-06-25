@@ -7,7 +7,6 @@ Responsibilities:
   - Provide a session-scoped results collector fixture
 """
 
-import datetime
 
 import pytest
 from dotenv import load_dotenv
@@ -58,7 +57,7 @@ class ResultsCollector:
         return [r for r in self.results if r.vulnerable]
 
     def by_severity(self) -> dict:
-        groups = {"critical": [], "high": [], "medium": [], "low": []}
+        groups: dict[str, list] = {"critical": [], "high": [], "medium": [], "low": []}
         for r in self.vulnerable:
             groups.setdefault(r.severity, []).append(r)
         return groups
