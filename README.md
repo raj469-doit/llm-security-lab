@@ -37,6 +37,7 @@ Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 |---|--------------|----------|--------|
 | LLM01 | Prompt Injection | 12 | 🔬 Active research |
 | LLM02 | Sensitive Information Disclosure | 13 | 🔬 Active research |
+| LLM05 | Improper Output Handling | 16 | 🔬 Active research |
 | LLM07 | System Prompt Leakage | 15 | 🔬 Active research |
 | LLM05 | Improper Output Handling | — | 📋 Planned |
 | LLM06 | Excessive Agency (Agentic AI misuse) | — | 📋 Planned |
@@ -57,6 +58,9 @@ llm-security-lab/
 │   ├── sensitive-info-disclosure/    # LLM02 — 13 payloads, 4 categories
 │   │   ├── test_sensitive_info_disclosure.py
 │   │   └── payloads.yaml
+│   ├── improper-output-handling/     # LLM05 — 16 payloads, 6 categories
+│   │   ├── test_improper_output_handling.py
+│   │   └── payloads.yaml
 │   └── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
 │       ├── test_system_prompt_leakage.py
 │       └── payloads.yaml
@@ -73,7 +77,7 @@ llm-security-lab/
 
 ---
 
-## How the three active modules chain together
+## How the four active modules chain together
 
 These modules are intentionally sequenced to demonstrate real attack chains:
 
@@ -82,10 +86,13 @@ These modules are intentionally sequenced to demonstrate real attack chains:
    credentials, and business logic
 3. **LLM02 Sensitive Information Disclosure** — attacker pivots from application
    configuration to USER data — PII, cross-tenant leakage, and memorized training data
+4. **LLM05 Improper Output Handling** — attacker manipulates the model into generating
+   dangerous output (XSS, SQL injection, shell commands) that exploits downstream systems
 
 In a real engagement these rarely stay separate. A multi-tenant AI support agent is
-vulnerable to all three in sequence: inject a malicious instruction, extract the
-system's rules, then use those rules to pull another customer's data out of shared context.
+vulnerable to all four in sequence: inject a malicious instruction, extract the
+system's rules, use those rules to pull another customer's data, and then weaponize the
+model's output to attack the application's own infrastructure.
 
 The `SPL-04x` injection-assisted payloads and the `CTL-0xx` cross-tenant payloads
 demonstrate this chain explicitly.
@@ -154,6 +161,12 @@ RAG knowledge base containing multiple customers' data to test isolation boundar
 15 payloads across 5 categories: direct extraction, completion priming, inference probing,
 injection-assisted leakage, and persona bypass. Three-layer detection including regex
 pattern matching for credentials and internal hostnames.
+
+### 🔴 LLM05: Improper Output Handling (`attacks/improper-output-handling/`)
+16 payloads across 6 categories: XSS, SQL injection, command injection, SSRF, code
+execution, and markup injection. Tests whether the model can be manipulated into generating
+dangerous output that would exploit downstream systems. Smart detection strips code blocks
+to distinguish documentation from executable output.
 
 ---
 
