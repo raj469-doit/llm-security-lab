@@ -220,6 +220,7 @@ and generative AI integration.
 - Google AI Essentials
 
 **Other projects:**
+- [Security Automation Toolkit](https://github.com/raj469-doit/SecurityAutomationToolkit) — OWASP-aligned web security scanner with risk scoring, differential analysis, and HTML/Markdown reporting
 - [Weather Service Automation Suite](https://github.com/raj469-doit/weather-api-automation) — Production-grade Python/Pytest/Playwright CI framework
 - [Cyclistic Bike Share Analysis](https://github.com/raj469-doit/cyclistic-bike-share-analysis) — Big data capstone using SQL, R, and Tableau
 
@@ -230,6 +231,12 @@ and generative AI integration.
 I offer **LLM Security Audits** for AI teams who want to know what's exploitable
 before someone else finds it. Engagements are scoped, time-boxed, and delivered
 as a written findings report with severity ratings and remediation guidance.
+
+I also offer **Web Security Assessments** using my
+[Security Automation Toolkit](https://github.com/raj469-doit/SecurityAutomationToolkit) —
+automated OWASP-aligned scanning of your web infrastructure covering security
+headers, TLS configuration, cookie hardening, and attack surface discovery,
+with differential tracking to measure remediation progress over time.
 
 📬 [linkedin.com/in/robert-johnson-sdet](https://linkedin.com/in/robert-johnson-sdet)
 📧 raj972@gmail.com
