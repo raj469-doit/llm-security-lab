@@ -178,6 +178,33 @@ to the hardcoded payloads in the Python source — so nothing breaks.
 
 ---
 
+## Judge-LLM layer (semantic detection)
+
+The default detection uses keyword matching and regex patterns. This catches
+explicit leaks but misses paraphrased or indirect disclosures — for example,
+a model describing "an open-source relational database with an elephant logo"
+instead of saying "PostgreSQL."
+
+Enable the judge-LLM layer to add a second AI as a referee. After each test,
+if the heuristic check says "safe," the response is sent to a judge model
+that evaluates whether confidential information was revealed regardless of
+how it was worded.
+
+```bash
+# Enable in your .env file
+LLM_USE_JUDGE=true
+
+# Optionally use a stronger model as the judge
+LLM_JUDGE_MODEL=gpt-4o
+```
+
+When a vulnerability is caught by the judge rather than heuristics, the
+evidence is prefixed with `[judge:high]`, `[judge:medium]`, or `[judge:low]`
+to indicate detection source and confidence. The judge is additive — it
+never overrides a heuristic finding, only catches what regex missed.
+
+---
+
 ## About me
 
 I'm a DevSecOps and Automation Engineer based in the DFW Metroplex. My background

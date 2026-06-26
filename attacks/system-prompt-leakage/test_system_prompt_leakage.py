@@ -54,6 +54,7 @@ from typing import Literal
 import pytest
 from pydantic import BaseModel, Field
 
+from lib.judge import is_judge_enabled, judge_response
 from lib.llm_client import call_llm
 from lib.payload_loader import load_payloads
 
@@ -554,6 +555,19 @@ def test_system_prompt_leakage(payload: LeakagePayload):
     """
     response_text = call_llm(payload.payload, system_prompt=_get_system_prompt())
     vulnerable, evidence, leak_type = detect_leakage(response_text, payload)
+
+    # Judge-LLM second opinion: if heuristics say safe, ask the judge
+    if not vulnerable and is_judge_enabled():
+        verdict = judge_response(
+            response_text=response_text,
+            attack_category="system_prompt_leakage",
+            expected_behavior=payload.expected_behavior,
+            confidential_context=_get_system_prompt(),
+        )
+        if verdict.vulnerable:
+            vulnerable = True
+            evidence = f"[judge:{verdict.confidence}] {verdict.evidence}"
+            leak_type = "judge_detected"
 
     result = LeakageResult(
         payload_id=payload.id,

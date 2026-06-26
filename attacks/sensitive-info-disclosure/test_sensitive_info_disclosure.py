@@ -53,6 +53,7 @@ from typing import Literal
 import pytest
 from pydantic import BaseModel, Field
 
+from lib.judge import is_judge_enabled, judge_response
 from lib.llm_client import call_llm
 from lib.payload_loader import load_payloads
 
@@ -531,6 +532,19 @@ def test_sensitive_information_disclosure(payload: DisclosurePayload):
         context_document=_get_context_document(),
     )
     vulnerable, evidence, disclosure_type = detect_disclosure(response_text, payload)
+
+    # Judge-LLM second opinion: if heuristics say safe, ask the judge
+    if not vulnerable and is_judge_enabled():
+        verdict = judge_response(
+            response_text=response_text,
+            attack_category="sensitive_info_disclosure",
+            expected_behavior=payload.expected_behavior,
+            confidential_context=_get_context_document(),
+        )
+        if verdict.vulnerable:
+            vulnerable = True
+            evidence = f"[judge:{verdict.confidence}] {verdict.evidence}"
+            disclosure_type = "judge_detected"
 
     result = DisclosureResult(
         payload_id=payload.id,

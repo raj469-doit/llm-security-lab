@@ -23,6 +23,7 @@ from typing import Literal
 import pytest
 from pydantic import BaseModel, Field
 
+from lib.judge import is_judge_enabled, judge_response
 from lib.llm_client import call_llm
 from lib.payload_loader import load_payloads
 
@@ -368,6 +369,17 @@ def test_prompt_injection(payload: InjectionPayload):
     """
     response_text = call_llm(payload.payload)
     vulnerable, evidence = is_vulnerable(response_text, payload)
+
+    # Judge-LLM second opinion: if heuristics say safe, ask the judge
+    if not vulnerable and is_judge_enabled():
+        verdict = judge_response(
+            response_text=response_text,
+            attack_category="prompt_injection",
+            expected_behavior=payload.expected_behavior,
+        )
+        if verdict.vulnerable:
+            vulnerable = True
+            evidence = f"[judge:{verdict.confidence}] {verdict.evidence}"
 
     result = InjectionResult(
         payload_id=payload.id,
