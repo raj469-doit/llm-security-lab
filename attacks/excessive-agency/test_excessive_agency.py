@@ -74,6 +74,7 @@ import pytest
 import requests
 from pydantic import BaseModel, Field
 
+
 # ---------------------------------------------------------------------------
 # Simulated agent system prompt
 # ---------------------------------------------------------------------------
@@ -457,7 +458,7 @@ def call_agent(user_message: str) -> str:
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    body = {
+    body: dict[str, object] = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
@@ -467,9 +468,10 @@ def call_agent(user_message: str) -> str:
         "max_tokens": 512,
     }
 
-    response = requests.post(api_url, headers=headers, json=body, timeout=30)
+    response = requests.post(api_url, headers=headers, json=body, timeout=30)  # type: ignore[arg-type]
     response.raise_for_status()
-    return response.json()["choices"][0]["message"]["content"]
+    result: str = response.json()["choices"][0]["message"]["content"]
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -648,8 +650,8 @@ def generate_agency_report(results: list[AgencyResult], output_path: str) -> Non
     """Write a structured findings report for excessive agency tests."""
 
     vulnerable  = [r for r in results if r.vulnerable]
-    by_severity = {"critical": [], "high": [], "medium": [], "low": []}
-    by_category = {}
+    by_severity: dict[str, list[AgencyResult]] = {"critical": [], "high": [], "medium": [], "low": []}
+    by_category: dict[str, list[AgencyResult]] = {}
 
     for r in vulnerable:
         by_severity[r.severity].append(r)
