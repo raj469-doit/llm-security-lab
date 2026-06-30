@@ -74,7 +74,6 @@ import pytest
 import requests
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Simulated agent system prompt
 # ---------------------------------------------------------------------------
