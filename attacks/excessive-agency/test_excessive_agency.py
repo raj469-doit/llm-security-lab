@@ -64,14 +64,15 @@ Note on testing methodology:
       3. Evaluating whether it decided to invoke a tool it shouldn't have
 """
 
+import datetime
+import json
 import os
 import re
-import json
-import datetime
+from typing import Literal
+
 import pytest
 import requests
 from pydantic import BaseModel, Field
-from typing import Literal
 
 
 # ---------------------------------------------------------------------------
@@ -491,7 +492,6 @@ def detect_excessive_agency(
     """
     response_lower = response.lower()
     agent_decision = ""
-    forbidden_tool_found = ""
 
     # Layer 1: JSON decision parsing
     try:
