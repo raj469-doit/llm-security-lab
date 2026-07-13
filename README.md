@@ -35,12 +35,12 @@ Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 |---|--------------|----------|--------|
 | LLM01 | Prompt Injection | 12 | 🔬 Active research |
 | LLM02 | Sensitive Information Disclosure | 13 | 🔬 Active research |
+| LLM05 | Improper Output Handling | 22 | 🔬 Active research |
 | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active research |
 | LLM07 | System Prompt Leakage | 15 | 🔬 Active research |
-| LLM05 | Improper Output Handling | — | 📋 Planned |
 | LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
 
-**Total active test cases: 61** — growing weekly.
+**Total active test cases: 83** — growing weekly.
 
 ---
 
@@ -51,6 +51,7 @@ llm-security-lab/
 ├── attacks/                          # Test suites by vulnerability category
 │   ├── prompt-injection/             # LLM01 — 12 payloads, 5 categories
 │   ├── sensitive-info-disclosure/    # LLM02 — 13 payloads, 4 categories
+│   ├── improper-output-handling/     # LLM05 — 22 payloads, 8 categories
 │   ├── excessive-agency/             # LLM06 — 21 payloads, 7 categories
 │   └── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
 ├── tools/                            # Reusable Python test utilities
@@ -61,7 +62,7 @@ llm-security-lab/
 
 ---
 
-## How the four active modules chain together
+## How the five active modules chain together
 
 These modules are intentionally sequenced to demonstrate real attack chains:
 
@@ -72,15 +73,15 @@ These modules are intentionally sequenced to demonstrate real attack chains:
    configuration to USER data — PII, cross-tenant leakage, and memorized training data
 4. **LLM06 Excessive Agency** — attacker triggers the agent to take real-world actions it
    shouldn't — sending emails, deleting accounts, executing SQL, exfiltrating data
+5. **LLM05 Improper Output Handling** — attacker uses the model as an injection vector
+   into downstream systems — XSS in browsers, SQL injection in databases, command
+   execution on servers, SSRF against internal networks
 
-In a real engagement these rarely stay separate. An agentic AI support system is
-vulnerable to all four in sequence: inject a malicious instruction (LLM01), extract the
-system's rules (LLM07), access another customer's data (LLM02), then trigger the
-agent to exfiltrate that data via email or destructive SQL (LLM06).
-
-The `IAL-0xx` injection-assisted launch payloads in `excessive-agency/` demonstrate
-the most dangerous chain: indirect prompt injection triggering autonomous tool
-invocations with real-world consequences.
+In a real engagement these rarely stay separate. An AI coding assistant or developer
+platform is vulnerable across the full chain: inject a prompt (LLM01), extract the
+system's rules (LLM07), leak user data from shared context (LLM02), trigger
+unauthorized tool actions (LLM06), and generate output that when passed to a browser,
+database, or shell becomes XSS, SQL injection, or remote code execution (LLM05).
 
 ---
 
@@ -132,6 +133,13 @@ Automated severity scoring and markdown findings report.
 13 payloads across 4 categories: PII leakage, cross-tenant leakage in multi-tenant
 systems, training data extraction, and business data disclosure. Simulates a realistic
 RAG knowledge base containing multiple customers' data to test isolation boundaries.
+
+### 🔴 LLM05: Improper Output Handling (`attacks/improper-output-handling/`)
+22 payloads across 8 categories: XSS, SQL injection, command injection, path traversal,
+email injection, SSRF, code injection, and markup injection. Each payload specifies its
+downstream context — where the dangerous output would land if passed unsanitized.
+Detection strips code blocks (documentation vs execution), checks for safety warnings,
+and integrates with a judge-LLM for semantic analysis.
 
 ### 🔴 LLM06: Excessive Agency (`attacks/excessive-agency/`)
 21 payloads across 7 categories: excessive functionality, excessive permissions,

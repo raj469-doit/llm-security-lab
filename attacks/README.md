@@ -7,12 +7,12 @@ category, mapped to the **OWASP Top 10 for LLM Applications 2025**.
 |--------|----------|---------------|----------|--------|
 | `prompt-injection/` | LLM01 | Prompt Injection | 12 | 🔬 Active |
 | `sensitive-info-disclosure/` | LLM02 | Sensitive Information Disclosure | 13 | 🔬 Active |
+| `improper-output-handling/` | LLM05 | Improper Output Handling | 22 | 🔬 Active |
 | `excessive-agency/` | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active |
 | `system-prompt-leakage/` | LLM07 | System Prompt Leakage | 15 | 🔬 Active |
-| `improper-output/` | LLM05 | Improper Output Handling | — | 📋 Planned |
 | `vector-embedding/` | LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
 
-**Total active test cases: 61** across 4 modules (LLM01 + LLM02 + LLM06 + LLM07)
+**Total active test cases: 83** across 5 modules (LLM01 + LLM02 + LLM05 + LLM06 + LLM07)
 
 ---
 
@@ -24,6 +24,9 @@ pytest attacks/prompt-injection/ -v
 
 # Run all sensitive information disclosure tests
 pytest attacks/sensitive-info-disclosure/ -v
+
+# Run all improper output handling tests
+pytest attacks/improper-output-handling/ -v
 
 # Run all excessive agency tests
 pytest attacks/excessive-agency/ -v
@@ -41,7 +44,7 @@ pytest attacks/ -v --html=reports/findings.html --self-contained-html
 pytest attacks/ -v -k "critical"
 ```
 
-## How the four active modules connect
+## How the five active modules connect
 
 These modules are intentionally sequenced to demonstrate real attack chains
 seen in production LLM applications:
@@ -55,16 +58,16 @@ seen in production LLM applications:
 4. **LLM06 Excessive Agency** — attacker triggers the agent to take real-world
    actions — sending emails, deleting accounts, executing SQL, exfiltrating data
    via tool chaining
+5. **LLM05 Improper Output Handling** — attacker uses the model as an injection
+   vector into downstream systems — XSS in browsers, SQL injection in databases,
+   command execution on servers, SSRF against internal networks, path traversal
+   for file access, and email header injection
 
-In a real engagement, these rarely stay separate. An agentic AI support system
-(handling tickets, managing subscriptions, accessing databases) is vulnerable
-to all four in sequence: inject a malicious instruction (LLM01), extract the
-system's rules (LLM07), access another customer's data (LLM02), then trigger
-the agent to exfiltrate that data or take destructive action (LLM06).
-
-The `SPL-04x` payloads in `system-prompt-leakage/`, the `CTL-0xx` payloads in
-`sensitive-info-disclosure/`, and the `IAL-0xx` payloads in `excessive-agency/`
-demonstrate these chains explicitly.
+In a real engagement, these rarely stay separate. An AI coding assistant or
+developer platform is vulnerable across the full chain: inject a prompt (LLM01),
+extract the system's rules (LLM07), leak user data from shared context (LLM02),
+trigger unauthorized tool actions (LLM06), and generate output that when passed
+to a browser, database, or shell becomes XSS, SQL injection, or RCE (LLM05).
 
 ## Environment setup
 
@@ -82,10 +85,14 @@ export LLM_SYSTEM_PROMPT="You are Aria, a customer support assistant..."
 
 # Multi-tenant context for LLM02 disclosure testing
 export LLM_CONTEXT_DOCUMENT="--- Past Support Tickets ---..."
+
+# Enable judge-LLM for semantic detection in LLM05
+export LLM_USE_JUDGE=true
 ```
 
-The LLM06 excessive agency module uses its own `DEFAULT_AGENT_SYSTEM_PROMPT`
-which configures an agent with 8 tools and decision-making rules. Override via
-`LLM_SYSTEM_PROMPT` to test your own agent's tool configuration.
+The LLM05 module uses a developer platform system prompt by default and supports
+judge-LLM integration for semantic analysis beyond pattern matching. The LLM06
+module uses an agent system prompt with 8 tools. Override via `LLM_SYSTEM_PROMPT`
+to test your own application's configuration.
 
 Never commit `.env` to version control.
