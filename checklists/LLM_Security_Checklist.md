@@ -157,21 +157,51 @@ Items marked 🟡 are **Medium** — address within 90 days.
 
 ## LLM08: Vector and Embedding Weaknesses
 
-> Is your RAG pipeline secure against poisoning and unauthorized access?
+> Is your RAG pipeline secure against poisoning, leakage, and unauthorized access?
 
-### Access Controls
-- [ ] 🔴 Vector database enforces per-user/per-tenant access at query time
+### Cross-Tenant Isolation
+- [ ] 🔴 Vector database enforces per-user/per-tenant namespace isolation at query time
+- [ ] 🔴 Retrieval results are filtered by tenant ID before injection into model context
+- [ ] 🔴 Cross-tenant queries are impossible by design, not just by convention
+- [ ] 🟠 Language-switching attacks cannot bypass tenant isolation filters
+- [ ] 🟠 Aggregation queries ("summarize everything") cannot surface cross-tenant data
+- [ ] 🟡 Row-level security is enforced on the vector database, not just the application layer
+
+### Knowledge Base Integrity
+- [ ] 🔴 Documents are validated and scanned for injection patterns before ingestion
+- [ ] 🔴 Retrieved documents are treated as DATA, not executable instructions
+- [ ] 🔴 Poisoned documents claiming to be system overrides or security patches are ignored
+- [ ] 🟠 Content integrity checks (hash verification, provenance tracking) are in place
+- [ ] 🟠 Phishing content injected into retrieved documents is not relayed to users
+- [ ] 🟠 Fake addendums referencing legitimate policies are not treated as authoritative
+- [ ] 🟡 Knowledge base is audited regularly for poisoned or manipulated content
+
+### Retrieval Layer Security
+- [ ] 🟠 Users cannot manipulate retrieval ranking or relevance scoring via prompt
+- [ ] 🟠 Namespace expansion via query injection is not possible
+- [ ] 🟠 Archived or redacted documents are not surfaceable via temporal manipulation
+- [ ] 🟡 Confidential documents retrieved via semantic similarity are filtered before display
+- [ ] 🟡 Repetition attacks cannot override policy documents in context
+
+### Embedding Metadata Protection
 - [ ] 🔴 Embeddings containing sensitive data are access-controlled, not just encrypted at rest
-- [ ] 🟠 Cross-tenant queries are impossible by design, not just by convention
+- [ ] 🟠 Vector store configuration (vendor, model, dimensions) is not disclosed in responses
+- [ ] 🟠 Similarity scores, document IDs, and chunk boundaries are stripped before display
+- [ ] 🟠 Debug or verbose mode cannot be enabled via user prompt
+- [ ] 🟡 Ingestion pipeline details (source URLs, chunking strategy) are not disclosed
 
-### Data Integrity
-- [ ] 🔴 Documents are validated and scanned before being added to the knowledge base
-- [ ] 🟠 Knowledge base is audited regularly for poisoned or manipulated content
-- [ ] 🟡 Data provenance is tracked — you know where every embedded document came from
+### Access Control Enforcement
+- [ ] 🔴 Authorization is enforced at the retrieval layer, not via prompt instructions
+- [ ] 🔴 Fabricated metadata in user messages (role=admin, clearance=top-secret) is ignored
+- [ ] 🟠 Direct document retrieval by ID bypasses semantic retrieval authorization
+- [ ] 🟠 Path traversal patterns (../) cannot navigate across namespace boundaries
+- [ ] 🟡 Gradual privilege escalation through incremental requests is blocked
 
 ### Mitigations in place?
 - [ ] 🟠 Immutable audit logs capture all retrieval queries and results
+- [ ] 🟠 Adversarial testing of RAG-specific vectors runs in your CI/CD pipeline
 - [ ] 🟡 Anomaly detection flags unusual retrieval patterns
+- [ ] 🟡 Data provenance is tracked — you know where every embedded document came from
 
 ---
 

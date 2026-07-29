@@ -10,9 +10,9 @@ category, mapped to the **OWASP Top 10 for LLM Applications 2025**.
 | `improper-output-handling/` | LLM05 | Improper Output Handling | 22 | 🔬 Active |
 | `excessive-agency/` | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active |
 | `system-prompt-leakage/` | LLM07 | System Prompt Leakage | 15 | 🔬 Active |
-| `vector-embedding/` | LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
+| `vector-embedding/` | LLM08 | Vector and Embedding Weaknesses (RAG) | 25 | 🔬 Active |
 
-**Total active test cases: 83** across 5 modules (LLM01 + LLM02 + LLM05 + LLM06 + LLM07)
+**Total active test cases: 108** across 6 modules (LLM01 + LLM02 + LLM05 + LLM06 + LLM07 + LLM08)
 
 ---
 
@@ -33,6 +33,9 @@ pytest attacks/excessive-agency/ -v
 
 # Run all system prompt leakage tests
 pytest attacks/system-prompt-leakage/ -v
+
+# Run all vector and embedding weakness tests (RAG)
+pytest attacks/vector-embedding/ -v
 
 # Run the full lab (all active modules)
 pytest attacks/ -v
@@ -62,12 +65,18 @@ seen in production LLM applications:
    vector into downstream systems — XSS in browsers, SQL injection in databases,
    command execution on servers, SSRF against internal networks, path traversal
    for file access, and email header injection
+6. **LLM08 Vector and Embedding Weaknesses** — attacker targets the RAG pipeline
+   itself — cross-tenant data leakage in shared vector indexes, poisoned documents
+   overriding model behavior, retrieval metadata exposure, and access control
+   bypass at the embedding layer
 
 In a real engagement, these rarely stay separate. An AI coding assistant or
 developer platform is vulnerable across the full chain: inject a prompt (LLM01),
 extract the system's rules (LLM07), leak user data from shared context (LLM02),
-trigger unauthorized tool actions (LLM06), and generate output that when passed
-to a browser, database, or shell becomes XSS, SQL injection, or RCE (LLM05).
+trigger unauthorized tool actions (LLM06), generate output that when passed
+to a browser, database, or shell becomes XSS, SQL injection, or RCE (LLM05),
+and if RAG-based, poison the knowledge base or leak cross-tenant data from
+shared vector stores (LLM08).
 
 ## Environment setup
 

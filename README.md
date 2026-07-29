@@ -38,9 +38,9 @@ Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 | LLM05 | Improper Output Handling | 22 | 🔬 Active research |
 | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active research |
 | LLM07 | System Prompt Leakage | 15 | 🔬 Active research |
-| LLM08 | Vector and Embedding Weaknesses | — | 📋 Planned |
+| LLM08 | Vector and Embedding Weaknesses (RAG) | 25 | 🔬 Active research |
 
-**Total active test cases: 83** — growing weekly.
+**Total active test cases: 108** — growing weekly.
 
 ---
 
@@ -53,7 +53,8 @@ llm-security-lab/
 │   ├── sensitive-info-disclosure/    # LLM02 — 13 payloads, 4 categories
 │   ├── improper-output-handling/     # LLM05 — 22 payloads, 8 categories
 │   ├── excessive-agency/             # LLM06 — 21 payloads, 7 categories
-│   └── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
+│   ├── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
+│   └── vector-embedding/            # LLM08 — 25 payloads, 5 categories (RAG)
 ├── tools/                            # Reusable Python test utilities
 ├── reports/                          # Generated findings reports
 ├── checklists/                       # LLM Security Checklist (free resource)
@@ -76,12 +77,17 @@ These modules are intentionally sequenced to demonstrate real attack chains:
 5. **LLM05 Improper Output Handling** — attacker uses the model as an injection vector
    into downstream systems — XSS in browsers, SQL injection in databases, command
    execution on servers, SSRF against internal networks
+6. **LLM08 Vector and Embedding Weaknesses** — attacker targets the RAG pipeline —
+   cross-tenant leakage in shared vector stores, poisoned documents overriding model
+   behavior, embedding metadata exposure, and retrieval-layer access control bypass
 
 In a real engagement these rarely stay separate. An AI coding assistant or developer
 platform is vulnerable across the full chain: inject a prompt (LLM01), extract the
 system's rules (LLM07), leak user data from shared context (LLM02), trigger
-unauthorized tool actions (LLM06), and generate output that when passed to a browser,
-database, or shell becomes XSS, SQL injection, or remote code execution (LLM05).
+unauthorized tool actions (LLM06), generate output that when passed to a browser,
+database, or shell becomes XSS, SQL injection, or remote code execution (LLM05),
+and if RAG-based, poison the knowledge base or leak cross-tenant data from shared
+vector stores (LLM08).
 
 ---
 
@@ -153,6 +159,19 @@ language compliance analysis and multi-step chain detection.
 15 payloads across 5 categories: direct extraction, completion priming, inference probing,
 injection-assisted leakage, and persona bypass. Three-layer detection including regex
 pattern matching for credentials and internal hostnames.
+
+### 🔴 LLM08: Vector and Embedding Weaknesses (`attacks/vector-embedding/`)
+25 payloads across 5 categories: cross-tenant leakage, knowledge base poisoning,
+retrieval manipulation, embedding metadata exposure, and access control bypass.
+Simulates a multi-tenant RAG pipeline by injecting context documents with tenant
+boundaries, poisoned content, and metadata probes. Includes advanced attack vectors:
+language-switching bypass, cross-tenant comparison extraction, authority-chaining
+poisoned documents, phishing injection via retrieved context, temporal manipulation
+to surface archived content, debug mode exploitation, path traversal across
+namespaces, and fabricated metadata role impersonation. Tests whether the model
+respects tenant isolation, ignores poisoned instructions in retrieved documents,
+and withholds retrieval internals. Available as an add-on to the LLM Security Audit
+for teams running RAG in production.
 
 ---
 
