@@ -7,6 +7,8 @@
 Built and maintained by **Robert Johnson** — DevSecOps & Automation Engineer with 15+ years
 hardening enterprise infrastructure, now specializing in LLM red-teaming and AI security validation.
 
+📋 **Free 111-item OWASP checklist + self-assessment kit:** [raj469security.gumroad.com](https://raj469security.gumroad.com)
+
 ---
 
 ## Why this repo exists
