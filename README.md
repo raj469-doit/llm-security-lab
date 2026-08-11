@@ -41,8 +41,9 @@ Mapped to the **OWASP Top 10 for LLM Applications 2025**:
 | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active research |
 | LLM07 | System Prompt Leakage | 15 | 🔬 Active research |
 | LLM08 | Vector and Embedding Weaknesses (RAG) | 25 | 🔬 Active research |
+| ASI01–ASI09 | Agentic Applications (OWASP ASI 2026) | 30 | 🔬 Active research |
 
-**Total active test cases: 108** — growing weekly.
+**Total active test cases: 138** — growing weekly.
 
 ---
 
@@ -57,6 +58,7 @@ llm-security-lab/
 │   ├── excessive-agency/             # LLM06 — 21 payloads, 7 categories
 │   ├── system-prompt-leakage/        # LLM07 — 15 payloads, 5 categories
 │   └── vector-embedding/            # LLM08 — 25 payloads, 5 categories (RAG)
+│   └── agentic-applications/       # ASI01-09 — 30 payloads, 6 categories (Agents)
 ├── tools/                            # Reusable Python test utilities
 ├── reports/                          # Generated findings reports
 ├── checklists/                       # LLM Security Checklist (free resource)
@@ -174,6 +176,20 @@ namespaces, and fabricated metadata role impersonation. Tests whether the model
 respects tenant isolation, ignores poisoned instructions in retrieved documents,
 and withholds retrieval internals. Available as an add-on to the LLM Security Audit
 for teams running RAG in production.
+
+### 🔴 OWASP Agentic Applications (ASI01–ASI09) (`attacks/agentic-applications/`)
+30 payloads across 6 categories mapped to the OWASP Top 10 for Agentic Applications
+(2026): agent goal hijacking (direct/indirect/recursive/cross-context injection),
+tool misuse and exploitation (recursive loops, unsafe composition, parameter injection,
+cross-tool state leakage, budget exhaustion), agent identity and privilege abuse
+(impersonation, fabricated handoffs, approval chain spoofing, maintenance mode bypass),
+memory and context poisoning (persistent instruction injection, fabricated history,
+state manipulation, cross-session leakage), insecure inter-agent communication
+(spoofed agent messages, coordination channel injection, compliance output mimicry,
+delegation chain manipulation), and human-agent trust exploitation (authority
+misrepresentation, misleading justifications, forced confidence, attestation fraud,
+emotional urgency bypass). Available as an add-on to the LLM Security Audit for teams
+deploying autonomous or multi-agent AI systems.
 
 ---
 

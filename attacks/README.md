@@ -11,8 +11,9 @@ category, mapped to the **OWASP Top 10 for LLM Applications 2025**.
 | `excessive-agency/` | LLM06 | Excessive Agency (Agentic AI misuse) | 21 | 🔬 Active |
 | `system-prompt-leakage/` | LLM07 | System Prompt Leakage | 15 | 🔬 Active |
 | `vector-embedding/` | LLM08 | Vector and Embedding Weaknesses (RAG) | 25 | 🔬 Active |
+| `agentic-applications/` | ASI01–09 | Agentic Applications (OWASP ASI 2026) | 30 | 🔬 Active |
 
-**Total active test cases: 108** across 6 modules (LLM01 + LLM02 + LLM05 + LLM06 + LLM07 + LLM08)
+**Total active test cases: 138** across 7 modules (LLM01 + LLM02 + LLM05 + LLM06 + LLM07 + LLM08 + ASI)
 
 ---
 
