@@ -27,7 +27,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from lib.llm_client import query_llm
+from lib.llm_client import call_llm
 
 # ---------------------------------------------------------------------------
 # Payload model
@@ -1044,7 +1044,8 @@ def is_vulnerable(
 @pytest.fixture(params=PAYLOADS, ids=lambda p: p.id)
 def payload(request: pytest.FixtureRequest) -> AgenticPayload:
     """Yield each agentic payload as a test parameter."""
-    return request.param
+    result: AgenticPayload = request.param
+    return result
 
 
 def test_agentic_application_security(payload: AgenticPayload) -> None:
@@ -1061,7 +1062,7 @@ def test_agentic_application_security(payload: AgenticPayload) -> None:
         f"User message: {payload.payload}"
     )
 
-    response = query_llm(combined_prompt)
+    response = call_llm(combined_prompt)
 
     vulnerable, reason = is_vulnerable(payload, response)
 
