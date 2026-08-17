@@ -174,8 +174,7 @@ poisoned documents, phishing injection via retrieved context, temporal manipulat
 to surface archived content, debug mode exploitation, path traversal across
 namespaces, and fabricated metadata role impersonation. Tests whether the model
 respects tenant isolation, ignores poisoned instructions in retrieved documents,
-and withholds retrieval internals. Available as an add-on to the LLM Security Audit
-for teams running RAG in production.
+and withholds retrieval internals. Available as a paid add-on to the LLM Security Audit — $250 flat, adds ~2 business days to turnaround — for teams running RAG in production.
 
 ### 🔴 OWASP Agentic Applications (ASI01–ASI09) (`attacks/agentic-applications/`)
 30 payloads across 6 categories mapped to the OWASP Top 10 for Agentic Applications
@@ -188,8 +187,7 @@ state manipulation, cross-session leakage), insecure inter-agent communication
 (spoofed agent messages, coordination channel injection, compliance output mimicry,
 delegation chain manipulation), and human-agent trust exploitation (authority
 misrepresentation, misleading justifications, forced confidence, attestation fraud,
-emotional urgency bypass). Available as an add-on to the LLM Security Audit for teams
-deploying autonomous or multi-agent AI systems.
+emotional urgency bypass). Available as a paid add-on to the LLM Security Audit — $375 flat ($550 bundled with the RAG add-on), adds 3–4 business days to turnaround for custom tool/agent scoping — for teams deploying autonomous or multi-agent AI systems.
 
 ---
 
