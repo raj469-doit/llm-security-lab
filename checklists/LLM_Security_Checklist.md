@@ -1,10 +1,10 @@
 # LLM Security Checklist
-### Mapped to OWASP Top 10 for LLM Applications 2025
+### Mapped to OWASP Top 10 for LLM Applications 2025 + OWASP Top 10 for Agentic Applications 2026
 
 **Author:** Robert Johnson — LLM Security Engineer  
 **GitHub:** [llm-security-lab](https://github.com/raj469-doit/llm-security-lab)  
 **LinkedIn:** [linkedin.com/in/robert-johnson-sdet](https://linkedin.com/in/robert-johnson-sdet)  
-**Version:** 1.0 — June 2025  
+**Version:** 2.0 — September 2026  
 
 > A practical, vendor-neutral checklist for AI teams who want to know what's
 > exploitable before their users find it. Use this before shipping any
@@ -205,6 +205,54 @@ Items marked 🟡 are **Medium** — address within 90 days.
 
 ---
 
+## OWASP Agentic Applications (ASI01–ASI09)
+
+> Does your autonomous or multi-agent system resist goal manipulation, tool misuse, and inter-agent exploitation?
+
+### Goal Hijacking
+- [ ] 🔴 Agent goals cannot be redirected by instructions embedded in tool outputs or retrieved content
+- [ ] 🔴 Agent resists recursive goal injection across multi-step task chains
+- [ ] 🟠 Agent does not accept goal changes originating from untrusted cross-context sources
+- [ ] 🟡 Goal state is logged and diffable across each step of a task
+
+### Tool Misuse & Exploitation
+- [ ] 🔴 Agent cannot be driven into unbounded recursive tool-call loops
+- [ ] 🔴 Tool parameters are validated before execution — not passed through unchecked from model output
+- [ ] 🟠 Agent cannot chain tools in unsafe compositions to reach an unauthorized outcome
+- [ ] 🟠 Per-agent budget/quota limits prevent resource or cost exhaustion via repeated tool calls
+- [ ] 🟡 Cross-tool state cannot leak between unrelated tasks or sessions
+
+### Identity & Privilege Abuse
+- [ ] 🔴 Agent cannot impersonate another agent, service, or user identity
+- [ ] 🔴 Approval/handoff chains are verified systematically, not just asserted in text
+- [ ] 🟠 Agent cannot be talked into a "maintenance mode" or elevated debug identity
+- [ ] 🟡 Agent-to-agent identity claims are authenticated, not trusted at face value
+
+### Memory & Context Poisoning
+- [ ] 🔴 Persistent memory cannot be overwritten by instructions injected during a single session
+- [ ] 🔴 Agent does not trust fabricated "history" it did not itself generate or verify
+- [ ] 🟠 Session state changes are validated against expected transitions before being applied
+- [ ] 🟡 Cross-session memory access is scoped and cannot leak between users or tenants
+
+### Inter-Agent Communication
+- [ ] 🔴 Messages between agents are authenticated — spoofed sender identities are rejected
+- [ ] 🟠 Coordination channels reject injected instructions disguised as peer-agent messages
+- [ ] 🟠 Agents do not treat another agent's compliance claims as ground truth without verification
+- [ ] 🟡 Delegation chains cannot be silently rerouted mid-task
+
+### Human-Agent Trust Exploitation
+- [ ] 🔴 High-stakes actions require verifiable human approval, not a claimed authority in agent output
+- [ ] 🟠 Agent justifications are checked against actual tool/action logs, not taken at face value
+- [ ] 🟠 Urgency or emotional framing in agent output cannot bypass required approval steps
+- [ ] 🟡 Attestations of task completion are independently verifiable, not self-reported only
+
+### Mitigations in place?
+- [ ] 🔴 All agent actions are logged with enough detail to reconstruct decision chains
+- [ ] 🟠 Adversarial testing of agentic attack vectors runs in your CI/CD pipeline
+- [ ] 🟡 A human-in-the-loop review gate exists for irreversible or high-impact agent actions
+
+---
+
 ## LLM10: Unbounded Consumption
 
 > Can an attacker exhaust your resources or steal your model behavior?
@@ -250,4 +298,4 @@ Flat fee · One-week turnaround · No retainer required.
 ---
 
 *Licensed under CC BY-SA 4.0 — free to share and adapt with attribution.*  
-*Mapped to OWASP Top 10 for LLM Applications 2025 · genai.owasp.org*
+*Mapped to OWASP Top 10 for LLM Applications 2025 and OWASP Top 10 for Agentic Applications 2026 · genai.owasp.org*
